@@ -27,6 +27,7 @@ from brake_disc import (
     BrakeDiscDetector,
     DetectorConfig,
     draw_result,
+    generate_pipeline_steps,
     result_summary_text,
 )
 
@@ -101,6 +102,7 @@ def analyze():
             logger.warning("Invalid config JSON, using defaults")
 
     draw_all = request.form.get("draw_all", "false").lower() == "true"
+    include_steps = request.form.get("steps", "false").lower() == "true"
 
     # Run detection
     try:
@@ -112,15 +114,21 @@ def analyze():
 
     annotated = draw_result(image, result, draw_all_circles=draw_all)
 
-    return jsonify(
-        {
-            "ok": True,
-            "image_shape": list(image.shape[:2]),
-            "annotated": _image_to_base64(annotated),
-            "result": result.to_dict(),
-            "summary": result_summary_text(result),
+    response = {
+        "ok": True,
+        "image_shape": list(image.shape[:2]),
+        "annotated": _image_to_base64(annotated),
+        "result": result.to_dict(),
+        "summary": result_summary_text(result),
+    }
+
+    if include_steps:
+        steps = generate_pipeline_steps(image, result, cfg)
+        response["steps"] = {
+            name: _image_to_base64(img) for name, img in steps.items()
         }
-    )
+
+    return jsonify(response)
 
 
 if __name__ == "__main__":

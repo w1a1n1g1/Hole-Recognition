@@ -384,6 +384,225 @@ body {
   gap: 20px;
 }
 
+/* ---------- Zoom Toolbar ---------- */
+.zoom-toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(8px);
+}
+
+.zoom-btn {
+  border: none;
+  background: var(--surface-alt);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.zoom-btn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.zoom-level {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Compare Slider ---------- */
+.compare-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+#compare-annotated {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 100%;
+  max-height: 600px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.compare-slider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary);
+  cursor: ew-resize;
+  z-index: 5;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+}
+
+.compare-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: var(--shadow-lg);
+  user-select: none;
+}
+
+/* ---------- Steps Gallery ---------- */
+.steps-gallery {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+.step-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+
+.step-card.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.step-img-wrap {
+  aspect-ratio: 4 / 3;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.step-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.step-label {
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Batch Gallery ---------- */
+.batch-gallery {
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.batch-thumb {
+  flex-shrink: 0;
+  width: 90px;
+  height: 90px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  position: relative;
+  background: var(--bg);
+  transition: var(--transition);
+}
+
+.batch-thumb:hover {
+  border-color: var(--primary-light);
+}
+
+.batch-thumb.active {
+  border-color: var(--primary);
+}
+
+.batch-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.batch-thumb .thumb-status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 4px;
+  text-align: center;
+}
+
+.batch-thumb.done .thumb-status {
+  background: var(--success);
+}
+
+.batch-thumb.error .thumb-status {
+  background: var(--danger);
+}
+
+/* ---------- Image container zoomable ---------- */
+.image-container.zoomable {
+  cursor: grab;
+  overflow: auto;
+}
+
+.image-container.zoomable:active {
+  cursor: grabbing;
+}
+
+.image-container.zoomable #preview-image {
+  transform-origin: center center;
+  transition: transform 0.1s ease-out;
+}
+
 /* ---------- Sidebar ---------- */
 .sidebar {
   display: flex;

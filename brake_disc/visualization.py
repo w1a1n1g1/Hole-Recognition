@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Dict, Optional
 
 import cv2
 import numpy as np
 
-from .core import BrakeDiscResult, Circle
+from .core import BrakeDiscResult, Circle, DetectorConfig
 
 # BGR colour palette
 COLOR_OUTER = (0, 255, 255)      # yellow
@@ -16,6 +16,13 @@ COLOR_BOLT = (0, 255, 0)         # green
 COLOR_PCD = (0, 165, 255)        # orange
 COLOR_TEXT = (255, 255, 255)     # white
 COLOR_BG = (0, 0, 0)             # black
+COLOR_RAW = (180, 180, 180)      # gray
+
+
+def _to_bgr(img: np.ndarray) -> np.ndarray:
+    if img.ndim == 2:
+        return cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    return img.copy()
 
 
 def _put_text_with_bg(
@@ -202,3 +209,64 @@ def result_summary_text(result: BrakeDiscResult) -> str:
             )
 
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline step visualization (for debugging / UI)
+# ---------------------------------------------------------------------------
+def generate_pipeline_steps(
+    image: np.ndarray,
+    result: BrakeDiscResult,
+    config: DetectorConfig,
+) -> Dict[str, np.ndarray]:
+    """Generate intermediate pipeline images for visualization.
+
+    Returns a dict mapping step name -> BGR image array:
+        grayscale, blurred, binary, edges, candidate_circles, final
+    """
+    gray = image if image.ndim == 2 else cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    steps: Dict[str, np.ndarray] = {}
+
+    # 1. Grayscale
+    steps["grayscale"] = _to_bgr(gray)
+
+    # 2. Blurred
+    blurred = cv2.GaussianBlur(
+        gray, (config.blur_kernel, config.blur_kernel), config.blur_sigma
+    )
+    steps["blurred"] = _to_bgr(blurred)
+
+    # 3. Binary (adaptive threshold + morphology)
+    binary = cv2.adaptiveThreshold(
+        blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY_INV, config.adaptive_block_size, config.adaptive_c,
+    )
+    kernel = cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE, (config.morph_kernel, config.morph_kernel)
+    )
+    binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+    binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+    steps["binary"] = _to_bgr(binary)
+
+    # 4. Canny edges
+    edges = cv2.Canny(blurred, int(config.hough_param1 * 0.4), config.hough_param1)
+    steps["edges"] = _to_bgr(edges)
+
+    # 5. All candidate circles (raw detections before classification)
+    raw = _to_bgr(gray)
+    for c in result.all_circles:
+        cv2.circle(
+            raw, (int(c.center[0]), int(c.center[1])), int(c.radius),
+            COLOR_RAW, 1,
+        )
+    _put_text_with_bg(
+        raw, f"candidates: {len(result.all_circles)}", (10, 25),
+        color=COLOR_TEXT,
+    )
+    steps["candidates"] = raw
+
+    # 6. Final annotated result
+    steps["final"] = draw_result(image, result, draw_all_circles=False)
+
+    return steps
+

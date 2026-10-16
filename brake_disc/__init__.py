@@ -6,7 +6,7 @@ from .core import (
     Circle,
     DetectorConfig,
 )
-from .visualization import draw_result, result_summary_text
+from .visualization import draw_result, generate_pipeline_steps, result_summary_text
 
 __all__ = [
     "BrakeDiscDetector",
@@ -14,6 +14,7 @@ __all__ = [
     "Circle",
     "DetectorConfig",
     "draw_result",
+    "generate_pipeline_steps",
     "result_summary_text",
 ]
 

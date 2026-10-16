@@ -40,8 +40,9 @@
         <h2>图像预览</h2>
         <div class="view-toggle">
           <button class="toggle-btn active" data-view="annotated">标注结果</button>
+          <button class="toggle-btn" data-view="compare">对比滑动</button>
           <button class="toggle-btn" data-view="original">原始图像</button>
-          <button class="toggle-btn" data-view="compare">对比视图</button>
+          <button class="toggle-btn" data-view="steps">检测过程</button>
         </div>
       </div>
 
@@ -52,20 +53,45 @@
             <path d="M14 44 L14 52 Q14 54 16 54 L48 54 Q50 54 50 52 L50 44" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <p class="upload-title">拖拽图像到此处，或点击选择文件</p>
-          <p class="upload-hint">支持 PNG / JPG / BMP / TIFF，最大 20MB</p>
+          <p class="upload-hint">支持 PNG / JPG / BMP / TIFF，可多选批量处理</p>
           <button class="btn btn-primary" id="pick-file-btn">选择图像</button>
         </div>
-        <input type="file" id="file-input" accept="image/*" hidden />
+        <input type="file" id="file-input" accept="image/*" multiple hidden />
       </div>
 
+      <!-- 批量画廊 -->
+      <div class="batch-gallery" id="batch-gallery" hidden></div>
+
       <div class="image-stage" id="image-stage" hidden>
+        <!-- 缩放工具栏 -->
+        <div class="zoom-toolbar" id="zoom-toolbar" hidden>
+          <button class="zoom-btn" id="zoom-out" title="缩小">−</button>
+          <span class="zoom-level" id="zoom-level">100%</span>
+          <button class="zoom-btn" id="zoom-in" title="放大">+</button>
+          <button class="zoom-btn" id="zoom-reset" title="适应窗口">⤢</button>
+        </div>
+
+        <!-- 单图显示 -->
         <div class="image-container" id="image-container">
           <img id="preview-image" alt="预览" />
+
+          <!-- 对比滑动层 -->
+          <div class="compare-overlay" id="compare-overlay" hidden>
+            <img id="compare-annotated" alt="标注" />
+            <div class="compare-slider" id="compare-slider">
+              <div class="compare-handle">⟷</div>
+            </div>
+          </div>
+
           <div class="image-loader" id="image-loader" hidden>
             <div class="spinner"></div>
             <p>分析中...</p>
           </div>
         </div>
+
+        <!-- 检测过程画廊 -->
+        <div class="steps-gallery" id="steps-gallery" hidden></div>
+
         <div class="image-meta" id="image-meta"></div>
       </div>
     </section>
@@ -78,9 +104,7 @@
           <h2>检测参数</h2>
           <button class="text-btn" id="reset-params">重置</button>
         </div>
-        <div class="params-grid" id="params-grid">
-          <!-- 参数由 JS 动态生成 -->
-        </div>
+        <div class="params-grid" id="params-grid"></div>
         <div class="params-actions">
           <button class="btn btn-success" id="analyze-btn" disabled>开始分析</button>
           <label class="checkbox">
