@@ -1,4 +1,6 @@
 # Brake Disc Hole Analyzer
+# 工业零件孔洞检测 —— 基于 Canny 边缘检测的参数对比实验
+对工业零件（刹车盘）图像进行 Canny 边缘检测，通过 5 组双阈值参数组合的对比实验筛选最优检测参数，为孔洞/缺陷自动检测提供可复现的参数选型依据。
 
 A computer-vision tool for detecting and measuring holes in brake-disc images.
 It identifies the **outer diameter (OD)**, the **central bore**, the **bolt
