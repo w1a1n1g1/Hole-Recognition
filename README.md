@@ -1,64 +1,128 @@
-# Canny边缘检测实验项目
+# Brake Disc Hole Analyzer
 
-## 项目结构
+A computer-vision tool for detecting and measuring holes in brake-disc images.
+It identifies the **outer diameter (OD)**, the **central bore**, the **bolt
+holes**, and computes the **pitch-circle diameter (PCD)** from the bolt-hole
+centers.
+
+## Features
+
+- **Multi-method circle detection** — combines contour analysis, Hough circle
+  transform, and OpenCV's `SimpleBlobDetector`, then merges duplicates.
+- **Brake-disc-aware geometry** — finds the OD via the outer contour, the
+  central bore via dark-region analysis, and groups bolt holes onto their PCD
+  using an iterative centroid + robust-distance clustering.
+- **Multiple interfaces** — a command-line tool (`cli.py`), a Tkinter GUI
+  (`gui.py`), and a reusable Python library (`brake_disc/`).
+- **Exportable results** — annotated images, plus JSON and CSV measurements.
+- **Canny edge-detection experiment** — `canny_edge_detection.py` sweeps
+  threshold combinations and compares blurred vs. unblurred results.
+
+## Project layout
 
 ```
-zy2/
-├── canny_edge_detection.py  # 主实验代码
-├── 实验记录表格.md          # 实验记录和分析
-├── README.md               # 项目说明
-├── brake_disc.jpg          # 实验素材图像
-└── results/                # 结果保存目录
-    └── ...                 # 边缘检测结果图像
+.
+├── brake_disc/              # Core library
+│   ├── __init__.py
+│   ├── core.py              # Detector, config, data classes
+│   └── visualization.py     # Annotated rendering + text summary
+├── cli.py                   # Command-line interface
+├── gui.py                   # Tkinter graphical interface
+├── canny_edge_detection.py  # Canny threshold experiment
+├── requirements.txt
+├── README.md
+├── 2.png                    # Sample brake-disc image
+└── results/                 # Generated outputs
 ```
 
-## 实验目的
-
-1. 掌握Canny边缘检测算法的核心原理及完整实现流程
-2. 熟练使用OpenCV实现工业零件图像的边缘检测
-3. 掌握Canny算法双阈值的调整方法，分析阈值对边缘检测效果的影响
-4. 学会保存边缘检测结果，撰写规范的实验记录
-
-## 环境要求
-
-- Python 3.8~3.10
-- OpenCV 4.5.0及以上版本
-- NumPy 1.21.0及以上版本
-- Matplotlib 3.4.0及以上版本
-
-## 安装依赖
+## Installation
 
 ```bash
-pip install opencv-python numpy matplotlib
+pip install -r requirements.txt
 ```
 
-## 实验步骤
+## Usage
 
-1. **准备实验素材**：将工业零件图像（brake_disc.jpg）放置在项目根目录
-2. **运行实验代码**：执行canny_edge_detection.py脚本
-3. **查看结果**：在results目录中查看不同参数组合的边缘检测结果
-4. **填写实验记录**：根据实验结果填写实验记录表格
+### Command line
 
-## 代码说明
+```bash
+# Analyze a single image (prints measurements + saves annotated image)
+python cli.py 2.png
 
-- `load_image()`：读取灰度图像
-- `canny_edge_detection()`：执行Canny边缘检测
-- `save_result()`：保存边缘检测结果
-- `main()`：主函数，执行不同参数组合的实验
+# Save JSON and CSV measurements
+python cli.py 2.png --json results/out.json --csv results/holes.csv
 
-## 实验参数
+# Batch-process a directory
+python cli.py images/ --output-dir results/
 
-- 高斯滤波：3×3核，σ=1
-- 双阈值组合：
-  - 组合1：threshold1=30, threshold2=90
-  - 组合2：threshold1=40, threshold2=100
-  - 组合3：threshold1=50, threshold2=150
-  - 组合4：threshold1=60, threshold2=120
-  - 组合5：threshold1=20, threshold2=80
+# Tweak detection parameters
+python cli.py 2.png --hough-param2 25 --min-bolt-ratio 0.02 --max-bolt-ratio 0.045
+```
 
-## 预期结果
+### GUI
 
-- 生成不同参数组合的边缘检测结果图像
-- 分析阈值对边缘检测效果的影响
-- 验证高斯滤波对去噪的重要性
-- 筛选出最优的边缘检测参数
+```bash
+python gui.py
+```
+
+Select an image, click **Analyze**, inspect the measurements, and save the
+annotated result.
+
+### Library
+
+```python
+import cv2
+from brake_disc import BrakeDiscDetector, draw_result, result_summary_text
+
+img = cv2.imread("2.png")
+detector = BrakeDiscDetector()
+result = detector.analyze(img)
+
+print(result_summary_text(result))
+annotated = draw_result(img, result)
+cv2.imwrite("annotated.jpg", annotated)
+```
+
+## Measurements
+
+All sizes are reported in **pixels**. Key outputs:
+
+| Quantity | Description |
+|----------|-------------|
+| Outer Diameter (OD) | Diameter of the disc's outer edge |
+| Central Bore | Diameter of the center hole |
+| Bolt holes | Count, center, radius, and diameter of each bolt hole |
+| PCD diameter | Diameter of the circle through all bolt-hole centers |
+| PCD std | Standard deviation of bolt-hole distances from the PCD center |
+
+## Canny edge-detection experiment
+
+```bash
+python canny_edge_detection.py [image_path]
+```
+
+Runs Canny with five threshold combinations (with Gaussian blur) plus a
+no-blur comparison, saving side-by-side figures in `results/`.
+
+## Configuration
+
+`DetectorConfig` (in `brake_disc/core.py`) exposes tunables for preprocessing,
+each detection method, and bolt-hole classification. Pass overrides via the
+CLI flags or by constructing a custom config in code.
+
+## Example output
+
+```
+===== Brake Disc Analysis Result =====
+Image size: 720x481
+Outer Diameter : 864.5 px (center=(359.5, 240.0))
+Central Bore   : 88.1 px (center=(341.9, 253.9))
+Bolt holes     : 5
+Avg bolt dia   : 23.8 px
+PCD diameter   : 159.9 px (std=1.6)
+PCD center     : (339.9, 253.6)
+
+--- Bolt hole details ---
+  #1: center=(395.1, 311.9), radius=13.8, diameter=27.5
+  ...
+```
