@@ -12,8 +12,9 @@ centers.
 - **Brake-disc-aware geometry** — finds the OD via the outer contour, the
   central bore via dark-region analysis, and groups bolt holes onto their PCD
   using an iterative centroid + robust-distance clustering.
-- **Multiple interfaces** — a command-line tool (`cli.py`), a Tkinter GUI
-  (`gui.py`), and a reusable Python library (`brake_disc/`).
+- **Multiple interfaces** — a modern **web UI** (`server.py`), a command-line
+  tool (`cli.py`), a Tkinter GUI (`gui.py`), and a reusable Python library
+  (`brake_disc/`).
 - **Exportable results** — annotated images, plus JSON and CSV measurements.
 - **Canny edge-detection experiment** — `canny_edge_detection.py` sweeps
   threshold combinations and compares blurred vs. unblurred results.
@@ -26,6 +27,11 @@ centers.
 │   ├── __init__.py
 │   ├── core.py              # Detector, config, data classes
 │   └── visualization.py     # Annotated rendering + text summary
+├── static/                  # Web UI assets
+│   ├── index.html
+│   ├── css/style.css
+│   └── js/app.js
+├── server.py                # Flask web server (Web UI)
 ├── cli.py                   # Command-line interface
 ├── gui.py                   # Tkinter graphical interface
 ├── canny_edge_detection.py  # Canny threshold experiment
@@ -42,6 +48,22 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+
+### Web UI (推荐)
+
+```bash
+python server.py
+```
+
+然后在浏览器中打开 http://localhost:5000 。
+
+功能：
+- 拖拽或点击上传刹车盘图像
+- 实时调节检测参数（圆度、Hough 阈值、螺栓孔半径范围等）
+- 一键分析，自动标注外径、中心孔、螺栓孔与节圆（PCD）
+- 查看测量结果卡片、螺栓孔明细表与统计信息
+- 切换"标注结果 / 原始图像"视图
+- 导出标注图像或 JSON 测量数据
 
 ### Command line
 
