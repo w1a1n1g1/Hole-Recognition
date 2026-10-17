@@ -1,0 +1,82 @@
+{
+  "2.png": {
+    "image_shape": [
+      481,
+      720
+    ],
+    "outer_diameter": {
+      "center": [
+        359.5,
+        240.0
+      ],
+      "radius": 432.25030517578125,
+      "method": "outer_contour",
+      "confidence": 1.0
+    },
+    "central_bore": {
+      "center": [
+        341.917274341117,
+        253.91356001638673
+      ],
+      "radius": 44.07364382980584,
+      "method": "bore_dark",
+      "confidence": 0.8963722732470801
+    },
+    "bolt_holes": [
+      {
+        "center": [
+          395.0619248084172,
+          311.9431540109329
+        ],
+        "radius": 13.773387535855866,
+        "method": "hough",
+        "confidence": 0.9038211109484124
+      },
+      {
+        "center": [
+          407.77160855626175,
+          215.48491406636137
+        ],
+        "radius": 11.945094697091639,
+        "method": "contour",
+        "confidence": 0.880014094683403
+      },
+      {
+        "center": [
+          306.71049428472486,
+          326.71502717100844
+        ],
+        "radius": 10.728129404910186,
+        "method": "contour",
+        "confidence": 0.8832011802328008
+      },
+      {
+        "center": [
+          262.0,
+          242.0
+        ],
+        "radius": 12.0,
+        "method": "hough",
+        "confidence": 0.8
+      },
+      {
+        "center": [
+          328.0,
+          172.0
+        ],
+        "radius": 11.0,
+        "method": "hough",
+        "confidence": 0.8
+      }
+    ],
+    "pcd_center": [
+      339.90880552988074,
+      253.62861904966053
+    ],
+    "pcd_radius": 79.93008066625585,
+    "pcd_diameter": 159.8601613325117,
+    "pcd_std": 1.579469568554015,
+    "bolt_hole_avg_diameter": 23.778644655143076,
+    "num_bolt_holes": 5
+  }
+}

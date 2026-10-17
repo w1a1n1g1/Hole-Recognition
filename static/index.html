@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>刹车盘孔位检测分析系统</title>
+  <link rel="stylesheet" href="static/css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 48 48" width="36" height="36">
+            <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <circle cx="24" cy="24" r="6" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <circle cx="24" cy="13" r="2.5" fill="currentColor"/>
+            <circle cx="34.6" cy="19" r="2.5" fill="currentColor"/>
+            <circle cx="34.6" cy="29" r="2.5" fill="currentColor"/>
+            <circle cx="24" cy="35" r="2.5" fill="currentColor"/>
+            <circle cx="13.4" cy="29" r="2.5" fill="currentColor"/>
+            <circle cx="13.4" cy="19" r="2.5" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>刹车盘孔位检测分析系统</h1>
+          <p>Brake Disc Hole Detection &amp; Measurement</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="badge" id="status-badge">就绪</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- 左侧：上传与图像预览 -->
+    <section class="panel image-panel">
+      <div class="panel-header">
+        <h2>图像预览</h2>
+        <div class="view-toggle">
+          <button class="toggle-btn active" data-view="annotated">标注结果</button>
+          <button class="toggle-btn" data-view="compare">对比滑动</button>
+          <button class="toggle-btn" data-view="original">原始图像</button>
+          <button class="toggle-btn" data-view="steps">检测过程</button>
+        </div>
+      </div>
+
+      <div class="upload-area" id="upload-area">
+        <div class="upload-inner">
+          <svg class="upload-icon" viewBox="0 0 64 64" width="64" height="64">
+            <path d="M32 12 L32 36 M32 36 L24 28 M32 36 L40 28" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 44 L14 52 Q14 54 16 54 L48 54 Q50 54 50 52 L50 44" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p class="upload-title">拖拽图像到此处，或点击选择文件</p>
+          <p class="upload-hint">支持 PNG / JPG / BMP / TIFF，可多选批量处理</p>
+          <button class="btn btn-primary" id="pick-file-btn">选择图像</button>
+        </div>
+        <input type="file" id="file-input" accept="image/*" multiple hidden />
+      </div>
+
+      <!-- 批量画廊 -->
+      <div class="batch-gallery" id="batch-gallery" hidden></div>
+
+      <div class="image-stage" id="image-stage" hidden>
+        <!-- 缩放工具栏 -->
+        <div class="zoom-toolbar" id="zoom-toolbar" hidden>
+          <button class="zoom-btn" id="zoom-out" title="缩小">−</button>
+          <span class="zoom-level" id="zoom-level">100%</span>
+          <button class="zoom-btn" id="zoom-in" title="放大">+</button>
+          <button class="zoom-btn" id="zoom-reset" title="适应窗口">⤢</button>
+        </div>
+
+        <!-- 单图显示 -->
+        <div class="image-container" id="image-container">
+          <img id="preview-image" alt="预览" />
+
+          <!-- 对比滑动层 -->
+          <div class="compare-overlay" id="compare-overlay" hidden>
+            <img id="compare-annotated" alt="标注" />
+            <div class="compare-slider" id="compare-slider">
+              <div class="compare-handle">⟷</div>
+            </div>
+          </div>
+
+          <div class="image-loader" id="image-loader" hidden>
+            <div class="spinner"></div>
+            <p>分析中...</p>
+          </div>
+        </div>
+
+        <!-- 检测过程画廊 -->
+        <div class="steps-gallery" id="steps-gallery" hidden></div>
+
+        <div class="image-meta" id="image-meta"></div>
+      </div>
+    </section>
+
+    <!-- 右侧：参数与结果 -->
+    <aside class="sidebar">
+      <!-- 参数面板 -->
+      <div class="panel params-panel">
+        <div class="panel-header">
+          <h2>检测参数</h2>
+          <button class="text-btn" id="reset-params">重置</button>
+        </div>
+        <div class="params-grid" id="params-grid"></div>
+        <div class="params-actions">
+          <button class="btn btn-success" id="analyze-btn" disabled>开始分析</button>
+          <label class="checkbox">
+            <input type="checkbox" id="draw-all" />
+            <span>显示所有原始检测</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 结果面板 -->
+      <div class="panel results-panel">
+        <div class="panel-header">
+          <h2>测量结果</h2>
+        </div>
+        <div class="results-empty" id="results-empty">
+          <p>上传图像并点击"开始分析"以查看测量结果</p>
+        </div>
+        <div class="results-content" id="results-content" hidden>
+          <div class="metrics-grid">
+            <div class="metric-card metric-od">
+              <span class="metric-label">外径 OD</span>
+              <span class="metric-value" id="m-od">—</span>
+              <span class="metric-unit">px</span>
+            </div>
+            <div class="metric-card metric-bore">
+              <span class="metric-label">中心孔</span>
+              <span class="metric-value" id="m-bore">—</span>
+              <span class="metric-unit">px</span>
+            </div>
+            <div class="metric-card metric-bolt">
+              <span class="metric-label">螺栓孔数</span>
+              <span class="metric-value" id="m-bolt-count">—</span>
+              <span class="metric-unit">个</span>
+            </div>
+            <div class="metric-card metric-pcd">
+              <span class="metric-label">节圆直径 PCD</span>
+              <span class="metric-value" id="m-pcd">—</span>
+              <span class="metric-unit">px</span>
+            </div>
+          </div>
+
+          <div class="result-detail">
+            <h3>螺栓孔详情</h3>
+            <table class="holes-table" id="holes-table">
+              <thead>
+                <tr>
+                  <th>编号</th>
+                  <th>中心 X</th>
+                  <th>中心 Y</th>
+                  <th>半径</th>
+                  <th>直径</th>
+                </tr>
+              </thead>
+              <tbody id="holes-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="result-detail">
+            <h3>统计信息</h3>
+            <ul class="stats-list">
+              <li><span>螺栓孔平均直径</span><strong id="s-avg-dia">—</strong> px</li>
+              <li><span>PCD 标准差</span><strong id="s-pcd-std">—</strong> px</li>
+              <li><span>PCD 圆心</span><strong id="s-pcd-center">—</strong></li>
+            </ul>
+          </div>
+
+          <div class="result-actions">
+            <button class="btn btn-outline" id="download-img">下载标注图</button>
+            <button class="btn btn-outline" id="download-json">导出 JSON</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="app-footer">
+    <p>刹车盘孔位检测分析系统 · 基于 OpenCV 多方法圆检测与节圆聚类</p>
+  </footer>
+
+  <script src="static/js/app.js"></script>
+</body>
+</html>
